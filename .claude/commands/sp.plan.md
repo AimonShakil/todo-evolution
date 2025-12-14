@@ -1,5 +1,6 @@
 ---
 description: Execute the implementation planning workflow using the plan template to generate design artifacts.
+ri: .specify/ri/skills/architect/
 ---
 
 ## User Input

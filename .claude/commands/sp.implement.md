@@ -1,5 +1,6 @@
 ---
 description: Execute the implementation plan by processing and executing all tasks defined in tasks.md
+ri: .specify/ri/skills/phase-implementer/
 ---
 
 ## User Input
