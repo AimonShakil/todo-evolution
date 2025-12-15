@@ -208,3 +208,12 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 
 ## Code Standards
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
+
+## Active Technologies
+- Python 3.13+ (constitutional requirement) + SQLModel (SQLAlchemy-based ORM with Pydantic validation), sqlite3 (bundled), Click or argparse (CLI framework) (002-phase-i-console-app)
+- SQLite local database file (`todo.db` in current working directory) (002-phase-i-console-app)
+- Python 3.13+ (constitutional requirement per Principle III) + Click (CLI framework), SQLModel 0.0.14+ (ORM with Pydantic validation), sqlite3 (bundled with Python) (001-add-task)
+- SQLite database file (`todo.db` in current working directory) (001-add-task)
+
+## Recent Changes
+- 002-phase-i-console-app: Added Python 3.13+ (constitutional requirement) + SQLModel (SQLAlchemy-based ORM with Pydantic validation), sqlite3 (bundled), Click or argparse (CLI framework)

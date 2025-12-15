@@ -1,0 +1,45 @@
+[project]
+name = "todo-evolution"
+version = "0.1.0"
+description = "A task management application - Phase I Console MVP"
+requires-python = ">=3.13"
+authors = [
+    {name = "Todo Evolution Team"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+dependencies = [
+    "sqlmodel>=0.0.14",
+    "click>=8.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "mypy>=1.5.0",
+    "pydocstyle>=6.3.0",
+]
+
+[project.scripts]
+todo = "src.cli.main:cli"
+
+[tool.black]
+line-length = 100
+target-version = ['py313']
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pydocstyle]
+convention = "google"
+add_ignore = ["D100", "D104"]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
