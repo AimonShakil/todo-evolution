@@ -139,7 +139,7 @@ def test_add_missing_user() -> None:
     result = runner.invoke(cli, ["add", "Buy milk"])
 
     assert result.exit_code == 2
-    assert "Missing option '--user'" in result.output or "Missing option \"--user\"" in result.output
+    assert "Missing option '--user'" in result.output or 'Missing option "--user"' in result.output
 
 
 def test_add_empty_user_id() -> None:

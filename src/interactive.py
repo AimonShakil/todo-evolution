@@ -73,6 +73,7 @@ def view_all_tasks(service: TaskService):
     try:
         with service.session as session:
             from sqlmodel import select
+
             tasks = session.exec(select(Task)).all()
 
         if not tasks:
@@ -139,6 +140,7 @@ def mark_complete(service: TaskService):
 
         with service.session as session:
             from sqlmodel import select
+
             task = session.exec(select(Task).where(Task.id == task_id)).first()
 
             if not task:
@@ -173,6 +175,7 @@ def delete_task(service: TaskService):
 
         with service.session as session:
             from sqlmodel import select
+
             task = session.exec(select(Task).where(Task.id == task_id)).first()
 
             if not task:
@@ -181,7 +184,7 @@ def delete_task(service: TaskService):
 
             confirm = input(f"\n⚠️  Delete task '{task.title}'? (yes/no): ").strip().lower()
 
-            if confirm in ['yes', 'y']:
+            if confirm in ["yes", "y"]:
                 session.delete(task)
                 session.commit()
                 print(f"\n✅ Task #{task_id} deleted successfully")
@@ -216,8 +219,7 @@ def show_statistics(service: TaskService):
 
             # Users
             users = session.exec(
-                select(Task.user_id, func.count(Task.id))
-                .group_by(Task.user_id)
+                select(Task.user_id, func.count(Task.id)).group_by(Task.user_id)
             ).all()
 
             print(f"\n   Total Tasks:      {total}")

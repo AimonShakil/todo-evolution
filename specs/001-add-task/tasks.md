@@ -940,50 +940,50 @@ After each phase, you MUST pause for human approval:
 
 ### Tasks
 
-- [ ] **T073** [P] Run full test suite and verify ≥80% coverage
+- [X] **T073** [P] Run full test suite and verify ≥80% coverage
   - **Command**: `pytest --cov=src --cov-report=html --cov-report=term-missing`
   - **Spec**: Constitutional Principle X (≥80% coverage target), SC-002 (quality)
   - **Acceptance**: Coverage report shows ≥80% overall. All 32 tests PASS. Open htmlcov/index.html to inspect line-by-line coverage.
   - **Time**: 10 minutes
 
-- [ ] **T074** [P] Run linters and formatters
+- [X] **T074** [P] Run linters and formatters
   - **Commands**: `black src/ tests/`, `mypy src/`, `pydocstyle src/`
   - **Spec**: Constitutional Principle X (code quality standards)
   - **Acceptance**: Black formats code with 0 changes needed. Mypy reports 0 errors. Pydocstyle reports 0 violations.
   - **Time**: 15 minutes
 
-- [ ] **T075** [P] Create acceptance scenario mapping checklist
+- [X] **T075** [P] Create acceptance scenario mapping checklist
   - **File**: `specs/001-add-task/acceptance-checklist.md`
   - **Content**: Map all 12 acceptance scenarios (US-1: 4, US-2: 4, US-3: 3) to specific test functions
   - **Spec**: Traceability (lineage from spec → tasks → tests), SC-002 (100% validation coverage)
   - **Acceptance**: Run `cat acceptance-checklist.md` and verify all 12 scenarios mapped to tests
   - **Time**: 20 minutes
 
-- [ ] **T076** [P] Verify all spec acceptance scenarios pass
+- [X] **T076** [P] Verify all spec acceptance scenarios pass
   - **Manual Tests**: Run through all 12 acceptance scenarios from spec.md manually
   - **Spec**: US-1 (4 scenarios), US-2 (4 scenarios), US-3 (3 scenarios), SC-002 (100% validation)
   - **Acceptance**: Document results in acceptance-checklist.md with ✅ for each scenario
   - **Time**: 30 minutes
 
-- [ ] **T077** [P] Verify performance target (p95 <100ms)
+- [X] **T077** [P] Verify performance target (p95 <100ms)
   - **Method**: Manual timing or pytest-benchmark - create 100 tasks, measure p95 latency
   - **Spec**: SC-005 (p95 <100ms for task creation), Constitutional Principle XVIII (Phase I performance)
   - **Acceptance**: p95 latency <100ms documented in performance-results.txt
   - **Time**: 20 minutes
 
-- [ ] **T078** [P] Verify type hints coverage
+- [X] **T078** [P] Verify type hints coverage
   - **Command**: `mypy src/ --strict`
   - **Spec**: Constitutional Principle X (code quality - type safety)
   - **Acceptance**: Mypy --strict reports 0 errors (all functions have type hints)
   - **Time**: 15 minutes
 
-- [ ] **T079** [P] Test quickstart.md examples manually
+- [X] **T079** [P] Test quickstart.md examples manually
   - **Tests**: Follow quickstart.md installation and basic usage examples step-by-step
   - **Spec**: Documentation accuracy, user onboarding
   - **Acceptance**: All examples in quickstart.md work exactly as documented (no errors)
   - **Time**: 20 minutes
 
-- [ ] **T080** Final integration smoke test
+- [X] **T080** Final integration smoke test
   - **Test**: Create 10 tasks for 3 users (alice, bob, charlie), verify isolation and persistence
   - **Spec**: SC-003 (persistence), SC-004 (isolation), SC-006 (concurrent creation)
   - **Acceptance**: All 30 tasks created, each user sees only their 10 tasks, database contains 30 rows
