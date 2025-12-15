@@ -28,6 +28,10 @@ class TaskService:
     def create_task(self, user_id: str, title: str) -> Task:
         """Create a new task for a user.
 
+        SECURITY CRITICAL: This method assigns user_id to the task, establishing
+        ownership. ALL queries MUST filter by user_id to enforce user isolation
+        (Constitutional Principle II: User Data Isolation).
+
         Args:
             user_id: The ID of the user creating the task.
             title: The task title (1-200 characters).
@@ -58,6 +62,10 @@ class TaskService:
 
     def get_tasks_for_user(self, user_id: str) -> list[Task]:
         """Retrieve all tasks for a specific user.
+
+        SECURITY CRITICAL: ALL queries MUST filter by user_id to enforce
+        user isolation (Constitutional Principle II). This ensures zero data
+        leakage between users - alice NEVER sees bob's tasks and vice versa.
 
         Args:
             user_id: The ID of the user whose tasks to retrieve.

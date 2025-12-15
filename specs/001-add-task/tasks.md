@@ -718,28 +718,28 @@ After each phase, you MUST pause for human approval:
 
 #### Integration Tests - Error Handling (4 tests)
 
-- [ ] **T059** [P] [US2] Write test_add_empty_title()
+- [X] **T059** [P] [US2] Write test_add_empty_title()
   - **File**: `tests/integration/test_add_task_integration.py`
   - **Test**: Invoke `todo add --user alice ""`, verify error message "Title cannot be empty" and exit code 1
   - **Spec**: US-2.AC-1 (empty title error), FR-009 (clear error messages), FR-010 (exit code 1)
   - **Acceptance**: Run test and verify it PASSES (validation already implemented in US1)
   - **Time**: 15 minutes
 
-- [ ] **T060** [P] [US2] Write test_add_title_too_long()
+- [X] **T060** [P] [US2] Write test_add_title_too_long()
   - **File**: `tests/integration/test_add_task_integration.py`
   - **Test**: Invoke `todo add --user alice` with 201-char title, verify error "Title must be 1-200 characters" and exit code 1
   - **Spec**: US-2.AC-2 (title too long), FR-002, FR-009, FR-010
   - **Acceptance**: Run test and verify it PASSES (validation already implemented)
   - **Time**: 15 minutes
 
-- [ ] **T061** [P] [US2] Write test_add_missing_user()
+- [X] **T061** [P] [US2] Write test_add_missing_user()
   - **File**: `tests/integration/test_add_task_integration.py`
   - **Test**: Invoke `todo add "Buy milk"` (no --user flag), verify error "Error: Missing option '--user'" and exit code 2
   - **Spec**: US-2.AC-3 (missing --user), FR-010 (exit code 2 for missing option)
   - **Acceptance**: Run test and verify it PASSES (Click framework handles this automatically)
   - **Time**: 15 minutes
 
-- [ ] **T062** [P] [US2] Write test_add_empty_user_id()
+- [X] **T062** [P] [US2] Write test_add_empty_user_id()
   - **File**: `tests/integration/test_add_task_integration.py`
   - **Test**: Invoke `todo add --user "" "Buy milk"`, verify error "User ID cannot be empty" and exit code 1
   - **Spec**: US-2.AC-4 (empty user_id), FR-003, FR-009, FR-010
@@ -765,7 +765,7 @@ After each phase, you MUST pause for human approval:
 
 ### Implementation for User Story 2
 
-- [ ] **T063** [US2] Verify error messages in add command match spec exactly
+- [X] **T063** [US2] Verify error messages in add command match spec exactly
   - **File**: `src/cli/commands/add.py`
   - **Review**: Ensure ValueError messages are "Title cannot be empty", "Title must be 1-200 characters", "User ID cannot be empty" (exact matches to spec)
   - **Spec**: FR-009 (clear error messages), US-2 acceptance scenarios
@@ -774,13 +774,13 @@ After each phase, you MUST pause for human approval:
 
 ### Integration Verification for User Story 2
 
-- [ ] **T064** [US2] Run all User Story 2 tests and verify 100% pass
+- [X] **T064** [US2] Run all User Story 2 tests and verify 100% pass
   - **Command**: `pytest tests/integration/test_add_task_integration.py -k "empty_title or too_long or missing_user or empty_user_id" -v`
   - **Spec**: US-2 verification, TDD green phase
   - **Acceptance**: All 4 tests PASS (0 failures)
   - **Time**: 5 minutes
 
-- [ ] **T065** [US2] Verify all US-2 acceptance scenarios pass manually
+- [X] **T065** [US2] Verify all US-2 acceptance scenarios pass manually
   - **Tests**:
     - US-2.AC-1: `todo add --user alice ""` → Error "Title cannot be empty", exit code 1
     - US-2.AC-2: `todo add --user alice` with 201-char title → Error "Title must be 1-200 characters", exit code 1
@@ -829,14 +829,14 @@ After each phase, you MUST pause for human approval:
 
 #### Unit Tests - User Isolation (2 tests)
 
-- [ ] **T066** [P] [US3] Write test_user_isolation()
+- [X] **T066** [P] [US3] Write test_user_isolation()
   - **File**: `tests/unit/test_task_service.py`
   - **Test**: Alice creates "Alice's task", Bob creates "Bob's task", call get_tasks_for_user("alice"), verify returns only Alice's task (not Bob's)
   - **Spec**: US-3.AC-1 (user sees only own tasks), FR-007 (filter by user_id), SC-004 (zero data leakage)
   - **Acceptance**: Run test and verify it PASSES (isolation already implemented in US1)
   - **Time**: 20 minutes
 
-- [ ] **T067** [P] [US3] Write test_user_id_filter_enforcement()
+- [X] **T067** [P] [US3] Write test_user_id_filter_enforcement()
   - **File**: `tests/unit/test_task_service.py`
   - **Test**: Create tasks for alice, bob, charlie. Call get_tasks_for_user("alice"), verify count matches alice's task count only
   - **Spec**: US-3.AC-3 (filter by user_id), FR-007
@@ -845,7 +845,7 @@ After each phase, you MUST pause for human approval:
 
 #### Integration Tests - Cross-User Access (1 test)
 
-- [ ] **T068** [P] [US3] Write test_cross_user_isolation()
+- [X] **T068** [P] [US3] Write test_cross_user_isolation()
   - **File**: `tests/integration/test_add_task_integration.py`
   - **Test**: Invoke `todo add --user alice "Alice task"` and `todo add --user bob "Bob task"`, verify database has 2 tasks with correct user_id values
   - **Spec**: US-3.AC-2 (task created with correct user_id), Constitutional Principle II (user isolation)
@@ -874,13 +874,13 @@ After each phase, you MUST pause for human approval:
 
 **Note**: No new implementation needed - User Story 1 already implements all user isolation logic. This phase verifies implementation meets security requirements.
 
-- [ ] **T069** [US3] Verify user_id index exists and query filtering works
+- [X] **T069** [US3] Verify user_id index exists and query filtering works
   - **Files**: Review `src/models/task.py` (user_id field has `index=True`), `src/services/task_service.py` (get_tasks_for_user uses `WHERE user_id = ?`)
   - **Spec**: FR-007 (user_id filtering), US-3.AC-3 (database filters by user_id), Constitutional Principle II (user isolation)
   - **Acceptance**: Run `sqlite3 todo.db ".schema task"` and verify `CREATE INDEX ix_task_user_id ON task (user_id)` exists. Review code confirms all queries filter by user_id.
   - **Time**: 15 minutes
 
-- [ ] **T070** [US3] Add security-critical docstrings emphasizing user isolation
+- [X] **T070** [US3] Add security-critical docstrings emphasizing user isolation
   - **Files**: `src/services/task_service.py`, `src/models/task.py`
   - **Docstrings**: Add "SECURITY CRITICAL: ALL queries MUST filter by user_id (Constitutional Principle II)" to TaskService methods
   - **Spec**: Constitutional Principle II (user isolation as non-negotiable), SC-004 (zero data leakage)
@@ -889,13 +889,13 @@ After each phase, you MUST pause for human approval:
 
 ### Integration Verification for User Story 3
 
-- [ ] **T071** [US3] Run all User Story 3 tests and verify 100% pass
+- [X] **T071** [US3] Run all User Story 3 tests and verify 100% pass
   - **Command**: `pytest tests/unit/test_task_service.py -k user_isolation tests/integration/test_add_task_integration.py -k cross_user -v`
   - **Spec**: US-3 verification, Constitutional Principle II
   - **Acceptance**: All 3 tests PASS (0 failures)
   - **Time**: 5 minutes
 
-- [ ] **T072** [US3] Verify all US-3 acceptance scenarios pass manually
+- [X] **T072** [US3] Verify all US-3 acceptance scenarios pass manually
   - **Tests**:
     - US-3.AC-1: Create "Alice's task" for alice, "Bob's task" for bob. Query database for alice's tasks only → See only Alice's task
     - US-3.AC-2: `todo add --user alice "Personal task"` → Verify task.user_id="alice" in database

@@ -4,10 +4,38 @@ This module provides test fixtures used across the test suite,
 including database session fixtures for isolation.
 """
 
+import os
 from typing import Generator
 
 import pytest
 from sqlmodel import Session, SQLModel, create_engine
+
+
+@pytest.fixture(autouse=True, scope="function")
+def cleanup_integration_db() -> Generator[None, None, None]:
+    """Clean up integration test database files before each test.
+
+    This autouse fixture ensures test isolation by removing any todo.db
+    files created during integration tests, preventing state leakage
+    between tests.
+    """
+    # Clean up before test
+    for file in ["todo.db", "todo.db-shm", "todo.db-wal"]:
+        if os.path.exists(file):
+            try:
+                os.remove(file)
+            except (OSError, PermissionError):
+                pass  # File might be locked, will be cleaned up later
+
+    yield
+
+    # Clean up after test
+    for file in ["todo.db", "todo.db-shm", "todo.db-wal"]:
+        if os.path.exists(file):
+            try:
+                os.remove(file)
+            except (OSError, PermissionError):
+                pass
 
 
 @pytest.fixture

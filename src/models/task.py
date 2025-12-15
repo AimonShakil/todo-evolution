@@ -34,6 +34,10 @@ UserIdStr = Annotated[str, AfterValidator(validate_user_id)]
 class Task(SQLModel, table=True):
     """Task entity representing a user's todo item.
 
+    SECURITY CRITICAL: The user_id field is INDEXED and MANDATORY for all queries
+    to enforce user data isolation (Constitutional Principle II). NEVER query tasks
+    without filtering by user_id to prevent data leakage between users.
+
     Attributes:
         id: Auto-incrementing primary key.
         user_id: User identifier for task ownership (indexed for filtering).
