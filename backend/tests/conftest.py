@@ -16,7 +16,7 @@ from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlmodel import SQLModel
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 
 from src.main import app
 from src.lib.database import get_session
@@ -89,7 +89,9 @@ async def client(session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
 
     app.dependency_overrides[get_session] = override_get_session
 
-    async with AsyncClient(app=app, base_url="http://test") as test_client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as test_client:
         yield test_client
 
     app.dependency_overrides.clear()
