@@ -1,0 +1,40 @@
+# Phase II Backend Dependencies
+
+# Core Framework
+fastapi==0.115.5
+uvicorn[standard]==0.34.0
+python-dotenv==1.0.1  # Environment variable loading from .env
+bcrypt==4.3.0  # Pin to 4.x for passlib compatibility (5.x has stricter limits)
+
+# Database
+sqlmodel==0.0.22
+alembic==1.14.0
+asyncpg==0.30.0  # Async PostgreSQL driver (for runtime)
+# Note: Alembic uses asyncpg instead of psycopg2 with async engine
+
+# Authentication
+python-jose[cryptography]==3.3.0  # JWT tokens
+passlib[bcrypt]==1.7.4  # Password hashing
+python-multipart==0.0.20  # Form data parsing
+
+# HTTP Client
+httpx==0.28.1  # Async HTTP client
+
+# Rate Limiting
+slowapi==0.1.9
+
+# Testing
+pytest==8.3.4
+pytest-asyncio==0.24.0
+pytest-cov==6.0.0
+aiosqlite==0.22.0  # Async SQLite driver for tests
+
+# Code Quality
+mypy==1.13.0
+black==24.10.0
+flake8==7.1.1
+
+# Pin Pydantic version for SQLModel compatibility
+pydantic==2.9.2
+pydantic-core==2.23.4
+email-validator==2.3.0  # Required for pydantic EmailStr validation
