@@ -171,7 +171,9 @@ export default function ChatInterface({
                     : "bg-accent/50 text-accent-foreground"
                 }`}
               >
-                <div className="whitespace-pre-wrap">{message.content}</div>
+                <div className="whitespace-pre-wrap leading-relaxed max-h-96 overflow-y-auto">
+                  {message.content}
+                </div>
                 {message.created_at && (
                   <div
                     className={`text-xs mt-1 ${

@@ -189,8 +189,10 @@ class AgentService:
         response_text = agent_message.content or ""
         tool_calls_executed = []
 
-        # Execute tool calls if agent requested them (T021)
+        # Execute tool calls if agent requested them (T021, T041)
         if agent_message.tool_calls:
+            # Step 1: Execute all tool calls
+            tool_messages = []
             for tool_call in agent_message.tool_calls:
                 tool_name = tool_call.function.name
                 tool_args = json.loads(tool_call.function.arguments)  # Parse JSON args (secure)
@@ -210,6 +212,47 @@ class AgentService:
                         "result": tool_result,
                     }
                 )
+
+                # Format tool result for agent (T041 - conversational formatting)
+                tool_messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "content": json.dumps(tool_result),
+                    }
+                )
+
+            # Step 2: Send tool results back to agent for natural language formatting (T041)
+            # This allows agent to convert JSON task lists into conversational responses
+            messages_with_tools = messages + [
+                {
+                    "role": "assistant",
+                    "content": response_text,
+                    "tool_calls": [
+                        {
+                            "id": tc.id,
+                            "type": "function",
+                            "function": {
+                                "name": tc.function.name,
+                                "arguments": tc.function.arguments,
+                            },
+                        }
+                        for tc in agent_message.tool_calls
+                    ],
+                }
+            ] + tool_messages
+
+            try:
+                # Get agent's formatted response (T041 - task query formatting)
+                final_response = await self._call_openai_agent(
+                    messages=messages_with_tools,
+                    tools=tools,
+                    model=model_used,
+                )
+                response_text = final_response.choices[0].message.content or response_text
+            except Exception as e:
+                # Fallback: use original response if formatting fails
+                pass
 
         # Detect ambiguous intent (T023, Edge Case 1)
         is_ambiguous = self._detect_ambiguous_intent(response_text)

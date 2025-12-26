@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "list_tasks",
+  "description": "Retrieve all tasks or filtered tasks for the authenticated user. This tool should be used when the user asks about their tasks, wants to see their list, or queries task status. Natural language examples: 'What tasks do I have?', 'Show me my incomplete tasks', 'What's on my list?'.",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "integer",
+      "description": "The authenticated user's ID (extracted from JWT token). Required for user data isolation."
+    },
+    "status": {
+      "type": "string",
+      "description": "Filter tasks by completion status. Use 'pending' for incomplete tasks, 'completed' for done tasks, 'all' for both.",
+      "enum": ["all", "pending", "completed"],
+      "default": "all"
+    }
+  },
+  "required": ["user_id"],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "user_id": 1,
+      "status": "all"
+    },
+    {
+      "user_id": 1,
+      "status": "pending"
+    },
+    {
+      "user_id": 1,
+      "status": "completed"
+    }
+  ],
+  "returns": {
+    "type": "object",
+    "properties": {
+      "success": {
+        "type": "boolean",
+        "description": "Whether the query was successful"
+      },
+      "tasks": {
+        "type": "array",
+        "description": "Array of task objects matching the filter",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "integer" },
+            "user_id": { "type": "integer" },
+            "title": { "type": "string" },
+            "description": { "type": "string", "nullable": true },
+            "completed": { "type": "boolean" },
+            "created_at": { "type": "string", "format": "date-time" },
+            "updated_at": { "type": "string", "format": "date-time" }
+          }
+        }
+      },
+      "count": {
+        "type": "integer",
+        "description": "Number of tasks returned"
+      },
+      "message": {
+        "type": "string",
+        "description": "User-friendly summary (e.g., 'You have 3 pending tasks and 2 completed tasks')"
+      }
+    },
+    "required": ["success", "tasks", "count", "message"]
+  },
+  "errors": [
+    {
+      "code": "UNAUTHORIZED",
+      "description": "User ID mismatch or invalid JWT token"
+    },
+    {
+      "code": "DATABASE_ERROR",
+      "description": "Failed to retrieve tasks from database"
+    }
+  ],
+  "implementation": {
+    "service": "TaskService",
+    "method": "get_all_tasks",
+    "reuse": "100% - Phase II function unchanged (filtering logic added in tool wrapper)"
+  }
+}

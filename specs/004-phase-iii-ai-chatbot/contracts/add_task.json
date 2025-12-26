@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "add_task",
+  "description": "Create a new task for the authenticated user. This tool should be used when the user expresses intent to add, create, remember, or track something. Natural language examples: 'I need to buy milk', 'Remember to call the dentist', 'Add task: finish report'.",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "integer",
+      "description": "The authenticated user's ID (extracted from JWT token). Required for user data isolation."
+    },
+    "title": {
+      "type": "string",
+      "description": "The task title (1-200 characters). Should be extracted from user's natural language input.",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional detailed description of the task. Use when user provides additional context beyond the title.",
+      "maxLength": 1000,
+      "default": null
+    }
+  },
+  "required": ["user_id", "title"],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "user_id": 1,
+      "title": "Buy groceries",
+      "description": "Milk, eggs, bread"
+    },
+    {
+      "user_id": 1,
+      "title": "Call dentist for checkup"
+    }
+  ],
+  "returns": {
+    "type": "object",
+    "properties": {
+      "success": {
+        "type": "boolean",
+        "description": "Whether the task was created successfully"
+      },
+      "task": {
+        "type": "object",
+        "description": "The created task object",
+        "properties": {
+          "id": { "type": "integer" },
+          "user_id": { "type": "integer" },
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "completed": { "type": "boolean" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "message": {
+        "type": "string",
+        "description": "User-friendly confirmation message (e.g., 'Added task: Buy groceries')"
+      }
+    },
+    "required": ["success", "task", "message"]
+  },
+  "errors": [
+    {
+      "code": "VALIDATION_ERROR",
+      "description": "Title is empty or exceeds 200 characters"
+    },
+    {
+      "code": "UNAUTHORIZED",
+      "description": "User ID mismatch or invalid JWT token"
+    },
+    {
+      "code": "DATABASE_ERROR",
+      "description": "Failed to create task in database"
+    }
+  ],
+  "implementation": {
+    "service": "TaskService",
+    "method": "create_task",
+    "reuse": "100% - Phase II function unchanged"
+  }
+}

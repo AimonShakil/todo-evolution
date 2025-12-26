@@ -137,16 +137,25 @@ async def list_tasks(
             for task in filtered_tasks
         ]
 
-        # Generate friendly message
+        # Generate friendly message (T043 - handle empty lists)
         pending_count = sum(1 for t in all_tasks if not t.completed)
         completed_count = sum(1 for t in all_tasks if t.completed)
 
         if status == "all":
-            message = f"You have {pending_count} pending tasks and {completed_count} completed tasks"
+            if len(all_tasks) == 0:
+                message = "You have no tasks yet. Create your first task to get started!"
+            else:
+                message = f"You have {pending_count} pending tasks and {completed_count} completed tasks"
         elif status == "pending":
-            message = f"You have {pending_count} pending tasks"
+            if pending_count == 0:
+                message = "You have no pending tasks. Great job staying on top of things!"
+            else:
+                message = f"You have {pending_count} pending tasks"
         else:  # "completed"
-            message = f"You have {completed_count} completed tasks"
+            if completed_count == 0:
+                message = "You haven't completed any tasks yet. Keep working on your list!"
+            else:
+                message = f"You have {completed_count} completed tasks"
 
         return {
             "success": True,

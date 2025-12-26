@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "update_task",
+  "description": "Update the title, description, or completion status of an existing task for the authenticated user. This tool should be used when the user wants to modify, change, edit, or update a task. Natural language examples: 'Change my report task to finish by Friday', 'Update the grocery list to include eggs', 'Actually, make it almond milk instead'. NOTE: If task_id is not provided, the agent should first use list_tasks to find the matching task.",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "integer",
+      "description": "The authenticated user's ID (extracted from JWT token). Required for user data isolation."
+    },
+    "task_id": {
+      "type": "integer",
+      "description": "The unique ID of the task to update. If not provided by user, agent should use list_tasks to find matching task by title/description."
+    },
+    "title": {
+      "type": "string",
+      "description": "New title for the task (1-200 characters). Only include if user wants to change the title.",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "description": {
+      "type": "string",
+      "description": "New description for the task. Only include if user wants to change the description. Set to null to remove description.",
+      "maxLength": 1000
+    },
+    "completed": {
+      "type": "boolean",
+      "description": "New completion status. Only include if user wants to toggle completion (prefer complete_task tool for marking as done)."
+    }
+  },
+  "required": ["user_id", "task_id"],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "user_id": 1,
+      "task_id": 42,
+      "title": "Buy groceries and cook dinner"
+    },
+    {
+      "user_id": 1,
+      "task_id": 42,
+      "description": "Milk, eggs, bread, and almond butter"
+    },
+    {
+      "user_id": 1,
+      "task_id": 42,
+      "title": "Finish Q4 report by Friday",
+      "description": "Include sales metrics and projections"
+    }
+  ],
+  "returns": {
+    "type": "object",
+    "properties": {
+      "success": {
+        "type": "boolean",
+        "description": "Whether the task was updated successfully"
+      },
+      "task": {
+        "type": "object",
+        "description": "The updated task object with modified fields",
+        "properties": {
+          "id": { "type": "integer" },
+          "user_id": { "type": "integer" },
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "completed": { "type": "boolean" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "message": {
+        "type": "string",
+        "description": "User-friendly confirmation message (e.g., 'Updated task: Buy groceries and cook dinner')"
+      }
+    },
+    "required": ["success", "task", "message"]
+  },
+  "errors": [
+    {
+      "code": "NOT_FOUND",
+      "description": "Task with given ID does not exist or does not belong to user"
+    },
+    {
+      "code": "VALIDATION_ERROR",
+      "description": "Title is empty or exceeds 200 characters, or description exceeds 1000 characters"
+    },
+    {
+      "code": "UNAUTHORIZED",
+      "description": "User ID mismatch or invalid JWT token"
+    },
+    {
+      "code": "DATABASE_ERROR",
+      "description": "Failed to update task in database"
+    }
+  ],
+  "implementation": {
+    "service": "TaskService",
+    "method": "update_task",
+    "reuse": "100% - Phase II function unchanged"
+  },
+  "agent_notes": [
+    "If user references a task by title/description (e.g., 'update the grocery task'), chain list_tasks first to find the task_id",
+    "If user says 'change it to...' or 'make it...', use conversation context to identify the most recently referenced task",
+    "If multiple tasks match, ask user to clarify which one",
+    "Only include fields that user wants to change (partial updates supported)",
+    "For marking tasks as done, prefer using complete_task tool instead of update_task with completed=true"
+  ]
+}

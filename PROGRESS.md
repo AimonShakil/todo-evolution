@@ -1,8 +1,8 @@
 # Phase III Implementation Progress
 
 **Last Updated**: 2025-12-26
-**Session**: Frontend ChatKit Integration (User Story 1 Complete!)
-**Status**: T001-T037 complete (37/95 tasks, 39%)
+**Session**: User Story 2 - Natural Language Task Queries Complete!
+**Status**: T001-T044 complete (41/95 tasks, 43%)
 
 ## Completed Tasks
 
@@ -148,6 +148,34 @@ Full end-to-end flow: JWT auth → find/create conversation → save user messag
 
 **User Story 1 MVP Complete!** 🎉
 Users can now chat with AI and create tasks via natural language in the web interface.
+
+### Phase 4: User Story 2 - Natural Language Task Queries (T041-T044) ✅ COMPLETE
+- ✅ T041: Task query formatting in AgentService
+  - Implemented two-step agent conversation for tool result formatting
+  - Tool results sent back to agent for natural language conversion
+  - Agent converts JSON task arrays into conversational responses
+  - Example: "What tasks do I have?" → formatted task list with context
+- ✅ T042: Status filter handling (already implemented)
+  - list_tasks tool accepts status parameter ("all", "pending", "completed")
+  - MCP schema includes enum for status filtering
+  - Agent can query specific task subsets
+- ✅ T043: Empty task list responses
+  - Friendly messages for empty lists: "No tasks yet. Create your first task!"
+  - Pending: "No pending tasks. Great job staying on top of things!"
+  - Completed: "Haven't completed any tasks yet. Keep working!"
+- ✅ T044: ChatInterface long list handling
+  - Added max-height (384px) with overflow scrolling for long messages
+  - Improved line spacing (leading-relaxed) for better readability
+  - Preserves whitespace and newlines for formatted lists
+
+**User Story 2 Complete!** 🎉
+Users can now query tasks in natural language and receive formatted, conversational responses.
+
+**Test Scenarios**:
+- "What tasks do I have?" → Lists all tasks
+- "Show me my incomplete tasks" → Filters to pending only
+- "What have I completed?" → Shows completed tasks
+- Empty list → Encouraging message
 
 ## Next Steps (Resume Here)
 
