@@ -88,16 +88,20 @@ def get_tool_schemas() -> list[dict[str, Any]]:
             "type": "function",
             "function": {
                 "name": "complete_task",
-                "description": "Mark a task as completed. Use when user indicates they've finished, completed, or done a task. Examples: 'Mark the grocery task as done', 'I finished buying milk', 'Complete my dentist task'. If task_id is not provided, use list_tasks first to find the matching task.",
+                "description": "Mark a task as completed. Use when user indicates they've finished, completed, or done a task. Examples: 'Mark the grocery task as done', 'I finished buying milk', 'Complete my dentist task'. Can search by title using search_term or use task_id directly.",
                 "parameters": {
                     "type": "object",
                     "properties": {
                         "task_id": {
                             "type": "integer",
-                            "description": "The unique ID of the task to complete. If not provided by user, use list_tasks to find matching task by title/description.",
+                            "description": "The unique ID of the task to complete. Use if you know the exact task ID.",
+                        },
+                        "search_term": {
+                            "type": "string",
+                            "description": "Search term to find task by title (e.g., 'milk', 'grocery'). Use when user references a task by name instead of ID. Will match tasks containing this term in their title.",
                         },
                     },
-                    "required": ["task_id"],
+                    "required": [],
                 },
             },
         },
@@ -105,16 +109,20 @@ def get_tool_schemas() -> list[dict[str, Any]]:
             "type": "function",
             "function": {
                 "name": "delete_task",
-                "description": "Permanently delete a task. Use when user wants to remove, delete, or discard a task. Examples: 'Delete my dentist task', 'Remove the grocery item', 'Get rid of that task'. If task_id is not provided, use list_tasks first to find the matching task.",
+                "description": "Permanently delete a task. Use when user wants to remove, delete, or discard a task. Examples: 'Delete my dentist task', 'Remove the grocery item', 'Get rid of that task'. Can search by title using search_term or use task_id directly.",
                 "parameters": {
                     "type": "object",
                     "properties": {
                         "task_id": {
                             "type": "integer",
-                            "description": "The unique ID of the task to delete. If not provided by user, use list_tasks to find matching task by title/description.",
+                            "description": "The unique ID of the task to delete. Use if you know the exact task ID.",
+                        },
+                        "search_term": {
+                            "type": "string",
+                            "description": "Search term to find task by title (e.g., 'milk', 'grocery'). Use when user references a task by name instead of ID. Will match tasks containing this term in their title.",
                         },
                     },
-                    "required": ["task_id"],
+                    "required": [],
                 },
             },
         },
@@ -122,13 +130,17 @@ def get_tool_schemas() -> list[dict[str, Any]]:
             "type": "function",
             "function": {
                 "name": "update_task",
-                "description": "Update the title, description, or completion status of an existing task. Use when user wants to modify, change, edit, or update a task. Examples: 'Change my report task to finish by Friday', 'Update the grocery list to include eggs', 'Actually, make it almond milk instead'. If task_id is not provided, use list_tasks first to find the matching task.",
+                "description": "Update the title, description, or completion status of an existing task. Use when user wants to modify, change, edit, or update a task. Examples: 'Change my report task to finish by Friday', 'Update the grocery list to include eggs', 'Actually, make it almond milk instead'. Can search by title using search_term or use task_id directly.",
                 "parameters": {
                     "type": "object",
                     "properties": {
                         "task_id": {
                             "type": "integer",
-                            "description": "The unique ID of the task to update. If not provided by user, use list_tasks to find matching task by title/description.",
+                            "description": "The unique ID of the task to update. Use if you know the exact task ID.",
+                        },
+                        "search_term": {
+                            "type": "string",
+                            "description": "Search term to find task by title (e.g., 'milk', 'grocery'). Use when user references a task by name instead of ID. Will match tasks containing this term in their title.",
                         },
                         "title": {
                             "type": "string",
@@ -143,7 +155,7 @@ def get_tool_schemas() -> list[dict[str, Any]]:
                             "description": "New completion status. Only include if user wants to toggle completion (prefer complete_task for marking as done).",
                         },
                     },
-                    "required": ["task_id"],
+                    "required": [],
                 },
             },
         },

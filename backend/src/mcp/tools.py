@@ -175,7 +175,8 @@ async def list_tasks(
 async def complete_task(
     session: AsyncSession,
     user_id: int,
-    task_id: int,
+    task_id: Optional[int] = None,
+    search_term: Optional[str] = None,
 ) -> dict[str, Any]:
     """
     Mark a task as completed for the authenticated user.
@@ -185,13 +186,15 @@ async def complete_task(
     Args:
         session: Async database session
         user_id: Authenticated user's ID (from JWT token)
-        task_id: ID of the task to complete
+        task_id: ID of the task to complete (if known)
+        search_term: Search term to find task by title (if task_id not provided)
 
     Returns:
         Dict with:
         - success: bool
         - task: updated task object (dict) or None
         - message: user-friendly confirmation message
+        - matches: list of matching tasks (if multiple matches found)
 
     Example:
         >>> result = await complete_task(session, user_id=1, task_id=42)
@@ -199,8 +202,58 @@ async def complete_task(
         True
         >>> result["message"]
         'Completed task: Buy milk'
+
+        >>> result = await complete_task(session, user_id=1, search_term="milk")
+        >>> # Finds task automatically if only 1 match
     """
     try:
+        # T047: Multi-task match handling (Edge Case 3)
+        if task_id is None and search_term:
+            # Search for matching tasks by title
+            all_tasks = await get_all_tasks(session=session, user_id=user_id)
+            matching_tasks = [
+                t for t in all_tasks
+                if search_term.lower() in t.title.lower() and not t.completed
+            ]
+
+            if len(matching_tasks) == 0:
+                return {
+                    "success": False,
+                    "task": None,
+                    "message": f"I couldn't find a pending task matching '{search_term}'. Would you like me to create one?",
+                    "matches": [],
+                }
+
+            if len(matching_tasks) > 1:
+                task_list = "\n".join(
+                    [f"{i+1}. {task.title} (ID: {task.id})" for i, task in enumerate(matching_tasks)]
+                )
+                return {
+                    "success": False,
+                    "task": None,
+                    "message": f"I found {len(matching_tasks)} pending tasks matching '{search_term}':\n{task_list}\n\nPlease specify which one you want to complete.",
+                    "matches": [
+                        {
+                            "id": t.id,
+                            "title": t.title,
+                            "description": t.description,
+                        }
+                        for t in matching_tasks
+                    ],
+                }
+
+            # Exactly 1 match - proceed
+            task_id = matching_tasks[0].id
+
+        # Proceed with completion
+        if task_id is None:
+            return {
+                "success": False,
+                "task": None,
+                "message": "Please provide either a task_id or search_term to complete a task.",
+            }
+
+        # Mark task as completed
         task = await toggle_task_completed(
             session=session,
             user_id=user_id,
@@ -246,7 +299,8 @@ async def complete_task(
 async def delete_task(
     session: AsyncSession,
     user_id: int,
-    task_id: int,
+    task_id: Optional[int] = None,
+    search_term: Optional[str] = None,
 ) -> dict[str, Any]:
     """
     Permanently delete a task for the authenticated user.
@@ -256,13 +310,15 @@ async def delete_task(
     Args:
         session: Async database session
         user_id: Authenticated user's ID (from JWT token)
-        task_id: ID of the task to delete
+        task_id: ID of the task to delete (if known)
+        search_term: Search term to find task by title (if task_id not provided)
 
     Returns:
         Dict with:
         - success: bool
         - deleted_task_id: ID of deleted task or None
         - message: user-friendly confirmation message
+        - matches: list of matching tasks (if multiple matches found)
 
     Example:
         >>> result = await delete_task(session, user_id=1, task_id=42)
@@ -270,8 +326,57 @@ async def delete_task(
         True
         >>> result["message"]
         'Deleted task: Buy milk'
+
+        >>> result = await delete_task(session, user_id=1, search_term="milk")
+        >>> # Finds task automatically if only 1 match
     """
     try:
+        # T048: Multi-task match handling (Edge Case 3)
+        if task_id is None and search_term:
+            # Search for matching tasks by title
+            all_tasks = await get_all_tasks(session=session, user_id=user_id)
+            matching_tasks = [
+                t for t in all_tasks
+                if search_term.lower() in t.title.lower()
+            ]
+
+            if len(matching_tasks) == 0:
+                return {
+                    "success": False,
+                    "deleted_task_id": None,
+                    "message": f"I couldn't find a task matching '{search_term}'.",
+                    "matches": [],
+                }
+
+            if len(matching_tasks) > 1:
+                task_list = "\n".join(
+                    [f"{i+1}. {task.title} (ID: {task.id})" for i, task in enumerate(matching_tasks)]
+                )
+                return {
+                    "success": False,
+                    "deleted_task_id": None,
+                    "message": f"I found {len(matching_tasks)} tasks matching '{search_term}':\n{task_list}\n\nPlease specify which one you want to delete.",
+                    "matches": [
+                        {
+                            "id": t.id,
+                            "title": t.title,
+                            "description": t.description,
+                        }
+                        for t in matching_tasks
+                    ],
+                }
+
+            # Exactly 1 match - proceed
+            task_id = matching_tasks[0].id
+
+        # Proceed with deletion
+        if task_id is None:
+            return {
+                "success": False,
+                "deleted_task_id": None,
+                "message": "Please provide either a task_id or search_term to delete a task.",
+            }
+
         # Get task title before deletion for message
         from src.services.task_service import get_task
 
@@ -314,7 +419,8 @@ async def delete_task(
 async def update_task(
     session: AsyncSession,
     user_id: int,
-    task_id: int,
+    task_id: Optional[int] = None,
+    search_term: Optional[str] = None,
     title: Optional[str] = None,
     description: Optional[str] = None,
     completed: Optional[bool] = None,
@@ -327,7 +433,8 @@ async def update_task(
     Args:
         session: Async database session
         user_id: Authenticated user's ID (from JWT token)
-        task_id: ID of the task to update
+        task_id: ID of the task to update (if known)
+        search_term: Search term to find task by title (if task_id not provided)
         title: New title (optional, 1-200 characters)
         description: New description (optional, max 1000 characters)
         completed: New completion status (optional)
@@ -337,6 +444,7 @@ async def update_task(
         - success: bool
         - task: updated task object (dict) or None
         - message: user-friendly confirmation message
+        - matches: list of matching tasks (if multiple matches found)
 
     Example:
         >>> result = await update_task(
@@ -349,8 +457,62 @@ async def update_task(
         True
         >>> result["message"]
         'Updated task: Buy groceries and supplies'
+
+        >>> result = await update_task(
+        ...     session,
+        ...     user_id=1,
+        ...     search_term="milk",
+        ...     title="Buy organic milk"
+        ... )
+        >>> # Finds task automatically if only 1 match
     """
     try:
+        # T049: Multi-task match handling (Edge Case 3)
+        if task_id is None and search_term:
+            # Search for matching tasks by title
+            all_tasks = await get_all_tasks(session=session, user_id=user_id)
+            matching_tasks = [
+                t for t in all_tasks
+                if search_term.lower() in t.title.lower()
+            ]
+
+            if len(matching_tasks) == 0:
+                return {
+                    "success": False,
+                    "task": None,
+                    "message": f"I couldn't find a task matching '{search_term}'.",
+                    "matches": [],
+                }
+
+            if len(matching_tasks) > 1:
+                task_list = "\n".join(
+                    [f"{i+1}. {task.title} (ID: {task.id})" for i, task in enumerate(matching_tasks)]
+                )
+                return {
+                    "success": False,
+                    "task": None,
+                    "message": f"I found {len(matching_tasks)} tasks matching '{search_term}':\n{task_list}\n\nPlease specify which one you want to update.",
+                    "matches": [
+                        {
+                            "id": t.id,
+                            "title": t.title,
+                            "description": t.description,
+                        }
+                        for t in matching_tasks
+                    ],
+                }
+
+            # Exactly 1 match - proceed
+            task_id = matching_tasks[0].id
+
+        # Proceed with update
+        if task_id is None:
+            return {
+                "success": False,
+                "task": None,
+                "message": "Please provide either a task_id or search_term to update a task.",
+            }
+
         task = await service_update_task(
             session=session,
             user_id=user_id,

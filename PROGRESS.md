@@ -1,8 +1,8 @@
 # Phase III Implementation Progress
 
 **Last Updated**: 2025-12-26
-**Session**: User Story 2 - Natural Language Task Queries Complete!
-**Status**: T001-T044 complete (41/95 tasks, 43%)
+**Session**: User Story 3 - Natural Language Task Management Complete!
+**Status**: T001-T051 complete (47/95 tasks, 49%)
 
 ## Completed Tasks
 
@@ -176,6 +176,41 @@ Users can now query tasks in natural language and receive formatted, conversatio
 - "Show me my incomplete tasks" → Filters to pending only
 - "What have I completed?" → Shows completed tasks
 - Empty list → Encouraging message
+
+### Phase 5: User Story 3 - Natural Language Task Management (T047-T051) ✅ COMPLETE
+- ✅ T047: Multi-task match handling for complete_task
+  - Added optional `search_term` parameter to complete_task tool
+  - Searches tasks by title matching (case-insensitive)  - 0 matches → "Would you like me to create one?"
+  - 1 match → Automatically proceeds with completion
+  - 2+ matches → Lists options with IDs for clarification
+  - Updated MCP schema with search_term parameter
+- ✅ T048: Multi-task match handling for delete_task
+  - Same search functionality as complete_task
+  - Safe deletion with title confirmation
+  - Handles ambiguous queries gracefully
+- ✅ T049: Multi-task match handling for update_task
+  - Search by title, then update fields
+  - Supports partial title matches
+  - Multi-match clarification flow
+- ✅ T050: Task not found handling (implicit)
+  - All tools return helpful "not found" messages
+  - Suggests creating task if no matches
+- ✅ T051: Multi-step tool chaining (already implemented via T041)
+  - Agent can chain list_tasks → complete_task
+  - Agent can now use search_term directly (more efficient)
+  - Two-step conversation pattern handles complex queries
+
+**User Story 3 Complete!** 🎉
+Users can now manage tasks via natural language without knowing task IDs:
+- "Complete the milk task" → Finds and completes automatically
+- "Delete my grocery task" → Confirms which one if multiple matches
+- "Update the report task to 'Finish Q4 report'" → Finds and updates
+
+**Test Scenarios**:
+- "Mark the grocery task as done" → Finds + completes
+- "Delete my dentist task" → Confirms deletion
+- "Change the milk task to almond milk" → Updates title
+- Multiple matches → Agent asks for clarification
 
 ## Next Steps (Resume Here)
 
