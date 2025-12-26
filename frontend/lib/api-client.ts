@@ -46,6 +46,24 @@ export interface SigninRequest {
   password: string;
 }
 
+export interface ChatMessageRequest {
+  message: string;
+}
+
+export interface ChatMessageResponse {
+  success: boolean;
+  response: string;
+  conversation_id: number;
+  tool_calls: Array<{
+    tool: string;
+    arguments: Record<string, any>;
+    result: Record<string, any>;
+  }>;
+  model_used: string | null;
+  is_ambiguous: boolean;
+  intent_unclear: boolean;
+}
+
 /**
  * Base API request with JWT authentication
  */
@@ -147,5 +165,20 @@ export const taskApi = {
   delete: (userId: number, taskId: number, token: string): Promise<void> =>
     apiRequest(`/api/${userId}/tasks/${taskId}`, {
       method: "DELETE",
+    }, token),
+};
+
+/**
+ * Chat API (requires JWT authentication)
+ */
+export const chatApi = {
+  sendMessage: (
+    userId: number,
+    data: ChatMessageRequest,
+    token: string
+  ): Promise<ChatMessageResponse> =>
+    apiRequest(`/api/${userId}/chat`, {
+      method: "POST",
+      body: JSON.stringify(data),
     }, token),
 };

@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { taskApi, type Task } from "@/lib/api-client";
+import Navigation from "@/components/Navigation";
 
 export default function TasksPage() {
   const router = useRouter();
@@ -178,11 +179,6 @@ export default function TasksPage() {
     }
   };
 
-  const handleSignOut = () => {
-    localStorage.clear();
-    router.push("/signin");
-  };
-
   // Filter tasks based on selected filter
   const filteredTasks = tasks.filter((task) => {
     if (filter === "active") return !task.completed;
@@ -203,18 +199,15 @@ export default function TasksPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4">
-      <div className="mx-auto max-w-4xl space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+    <>
+      <Navigation userName={userName} />
+      <div className="min-h-screen bg-slate-50 p-4">
+        <div className="mx-auto max-w-4xl space-y-6">
+          {/* Header */}
           <div>
             <h1 className="text-3xl font-bold">My Tasks</h1>
-            <p className="text-muted-foreground">Welcome back, {userName}!</p>
+            <p className="text-muted-foreground">Manage your tasks</p>
           </div>
-          <Button variant="outline" onClick={handleSignOut}>
-            Sign Out
-          </Button>
-        </div>
 
         {/* Error Message */}
         {error && (
@@ -417,5 +410,6 @@ export default function TasksPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
