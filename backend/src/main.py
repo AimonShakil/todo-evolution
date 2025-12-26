@@ -17,14 +17,15 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from src.lib.database import init_db, close_db
-from src.routes import auth, tasks
+from src.routes import auth, tasks, chat
 from src.routes.tasks import router as task_router
 from src.routes.tasks import router as tasks_router
+from src.routes.chat import router as chat_router
 # Create FastAPI app
 app = FastAPI(
-    title="Todo Evolution - Phase II API",
-    description="Task management API with JWT authentication and user isolation",
-    version="2.0.0",
+    title="Todo Evolution - Phase III API",
+    description="AI-powered task management with natural language chat interface",
+    version="3.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
 )
@@ -50,6 +51,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Register routers
 app.include_router(auth.router)
 app.include_router(tasks_router, prefix="/api")
+app.include_router(chat_router, prefix="/api")  # Phase III: Chat endpoint
 
 
 # Startup event
@@ -91,7 +93,7 @@ async def health_check() -> dict:
             "version": "2.0.0"
         }
     """
-    return {"status": "healthy", "version": "2.0.0"}
+    return {"status": "healthy", "version": "3.0.0"}
 
 
 # Root endpoint
@@ -114,9 +116,10 @@ async def root() -> dict:
         }
     """
     return {
-        "message": "Todo Evolution API - Phase II",
+        "message": "Todo Evolution API - Phase III (AI Chat)",
         "docs": "/docs",
         "health": "/health",
+        "chat": "/api/{user_id}/chat",
     }
 
 
