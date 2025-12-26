@@ -46,6 +46,8 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     """Chat message response."""
 
+    model_config = {"protected_namespaces": ()}  # Allow model_used field
+
     success: bool
     response: str
     conversation_id: int
