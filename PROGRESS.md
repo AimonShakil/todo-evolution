@@ -1,8 +1,8 @@
 # Phase III Implementation Progress
 
 **Last Updated**: 2025-12-26
-**Session**: Service Layer & MCP Tools
-**Status**: T001-T018 complete (18/95 tasks, 19%)
+**Session**: Agent Service Foundation
+**Status**: T001-T024 complete (24/95 tasks, 25%)
 
 ## Completed Tasks
 
@@ -49,26 +49,69 @@
 
 **Commit**: `e42a8a6` - feat(phase-iii): implement service layer & MCP tools (T010-T018)
 
+### Phase 2: Agent Service Foundation (T019-T024) ✅ COMPLETE
+- ✅ T019: AgentService skeleton created (`backend/src/services/agent_service.py`)
+  - OpenAI AsyncClient initialization with API key validation
+  - Class structure with context reconstruction and agent invocation methods
+- ✅ T020: Context reconstruction implemented (ADR-006)
+  - get_conversation_context() fetches last 50 messages
+  - Uses MessageService.get_conversation_messages()
+  - Formats messages for OpenAI API (role + content)
+- ✅ T021: Agent invocation with tool registration
+  - invoke_agent() orchestrates full agent interaction
+  - Registers MCP tools via mcp/server.get_tool_schemas()
+  - Executes tool calls via mcp/server.execute_tool()
+  - Returns response + tool_calls + model_used for observability
+- ✅ T022: Model fallback logic (ADR-007)
+  - Try GPT-4 first (primary model)
+  - Catch RateLimitError → fallback to GPT-3.5-turbo
+  - Catch APIError → user-friendly error message
+- ✅ T023: Ambiguous intent detection (Edge Case 1)
+  - _detect_ambiguous_intent() checks for clarification phrases
+  - Detects "not sure", "unclear", "could you clarify", etc.
+- ✅ T024: Intent determination logic (Edge Case 2)
+  - _detect_unclear_intent() checks for comprehension failures
+  - Detects "don't understand", "not clear", "could you rephrase", etc.
+
+**Security Fix**: Used json.loads() instead of eval() for parsing tool arguments
+
+**All imports verified successfully** ✅
+
+**Commit**: `f084cf1` - feat(phase-iii): implement Agent Service Foundation (T019-T024)
+
+**Phase 2 Foundation Complete!** ✅
+Database models, services, MCP tools, and agent orchestration all functional.
+
 ## Next Steps (Resume Here)
 
-### Phase 2 Final: Agent Service Foundation (T019-T024)
+### Phase 3: User Story 1 - Natural Language Task Creation (T025-T040)
 
-**Dependencies Met**: T011b (get_conversation_messages) ✅ + T018 (MCP server) ✅
+**Goal**: Users can create tasks via natural language conversation
 
-**Next 6 Tasks**:
-- [ ] T019: AgentService skeleton
-- [ ] T020: Context reconstruction (last 50 messages)
-- [ ] T021: Agent invocation with tool registration
-- [ ] T022: Model fallback (GPT-4 → GPT-3.5-turbo)
-- [ ] T023: Ambiguous intent detection
-- [ ] T024: Intent determination logic
+**Dependencies Met**: All Phase 2 tasks complete (T001-T024) ✅
 
-**Implementation Notes**:
-- Use OpenAI Agents SDK (not raw OpenAI API)
-- ADR-002: Context reconstruction = last 50 messages ordered chronologically
-- ADR-003: Model fallback = try GPT-4, catch rate_limit_exceeded, retry with GPT-3.5
-- Tools list from mcp/server.get_tool_schemas()
-- Tool execution via mcp/server.execute_tool()
+**Next Tasks - Chat API Endpoint (T025-T032)**:
+- [ ] T025: Create ChatRouter with POST /api/{user_id}/chat endpoint
+- [ ] T026: Implement JWT authentication middleware (reuse Phase II auth)
+- [ ] T027: Implement request validation (4000 char limit) using Pydantic
+- [ ] T028: Implement conversation lifecycle logic (find or create active conversation)
+- [ ] T029: Implement agent invocation with user message
+- [ ] T030: Implement message persistence (user + assistant messages)
+- [ ] T031: Implement error handling for tool failures and API errors
+- [ ] T032: Register chat route in backend/src/main.py
+
+**Parallel Work - Frontend ChatKit Integration (T033-T037)**:
+These can run in parallel with backend endpoint development:
+- [ ] T033: Create ChatKit configuration in frontend/lib/chatkit-config.ts
+- [ ] T034: Create chat API method in frontend/lib/api.ts
+- [ ] T035: Create ChatInterface component wrapping OpenAI ChatKit
+- [ ] T036: Create chat page in frontend/app/chat/page.tsx
+- [ ] T037: Update navigation in frontend/app/layout.tsx
+
+**Optional Tests (T038-T040)**:
+- [ ] T038: Write contract test for add_task MCP tool
+- [ ] T039: Write integration test for chat endpoint task creation
+- [ ] T040: Write unit test for AgentService (mocked OpenAI API)
 
 ## Important Files to Review Tomorrow
 
