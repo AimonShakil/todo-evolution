@@ -24,11 +24,23 @@ from src.services.auth_service import get_user_id_from_token
 from src.services.conversation_service import (
     create_conversation,
     get_active_conversation,
+    list_user_conversations,
 )
-from src.services.message_service import create_message, get_conversation_messages
+from src.services.message_service import create_message, get_conversation_messages, count_messages
 
 router = APIRouter(prefix="", tags=["Chat"])
 security = HTTPBearer()
+
+
+# Response model for conversation list
+class ConversationListItem(BaseModel):
+    """Single conversation in list response."""
+
+    id: int
+    created_at: str
+    updated_at: str
+    is_active: bool
+    message_count: int
 
 
 # Request/Response models (T027)
@@ -112,6 +124,73 @@ async def verify_user_access(
             detail="Cannot access another user's chat",
         )
     return current_user
+
+
+# Conversations list endpoint (T063)
+@router.get("/{user_id}/conversations", response_model=list[ConversationListItem])
+async def list_conversations(
+    user_id: int,
+    verified_user: int = Depends(verify_user_access),
+    session: AsyncSession = Depends(get_session),
+) -> list[ConversationListItem]:
+    """
+    Get list of all conversations for authenticated user.
+
+    Returns conversations ordered by most recently updated first,
+    with message counts for each conversation.
+
+    Args:
+        user_id: User ID from URL (verified against JWT)
+        verified_user: User ID after JWT verification
+        session: Database session
+
+    Returns:
+        List of conversations with metadata
+
+    Example:
+        GET /api/1/conversations
+        Authorization: Bearer <token>
+
+        Response 200:
+        [
+            {
+                "id": 5,
+                "created_at": "2025-12-26T10:00:00",
+                "updated_at": "2025-12-26T12:30:00",
+                "is_active": true,
+                "message_count": 12
+            },
+            ...
+        ]
+    """
+    # Get all user conversations (ordered by updated_at desc)
+    conversations = await list_user_conversations(
+        session=session,
+        user_id=user_id,
+        page=1,
+        limit=100,  # Return up to 100 conversations
+    )
+
+    # Build response with message counts
+    conversation_items = []
+    for conv in conversations:
+        msg_count = await count_messages(
+            session=session,
+            conversation_id=conv.id,
+            user_id=user_id,
+        )
+
+        conversation_items.append(
+            ConversationListItem(
+                id=conv.id,
+                created_at=conv.created_at.isoformat(),
+                updated_at=conv.updated_at.isoformat(),
+                is_active=conv.is_active,
+                message_count=msg_count,
+            )
+        )
+
+    return conversation_items
 
 
 # Chat endpoint (T025, T028-T031)
