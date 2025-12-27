@@ -42,9 +42,7 @@ async def get_all_tasks(session: AsyncSession, user_id: int) -> list[Task]:
     return list(result.scalars().all())
 
 
-async def get_task(
-    session: AsyncSession, user_id: int, task_id: int
-) -> Optional[Task]:
+async def get_task(session: AsyncSession, user_id: int, task_id: int) -> Optional[Task]:
     """
     Get a single task by ID with user ownership verification.
 

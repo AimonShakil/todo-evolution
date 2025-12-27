@@ -15,13 +15,10 @@ from typing import Any, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.services.task_service import (
-    create_task as service_create_task,
-    delete_task as service_delete_task,
-    get_all_tasks,
-    toggle_task_completed,
-    update_task as service_update_task,
-)
+from src.services.task_service import create_task as service_create_task
+from src.services.task_service import delete_task as service_delete_task
+from src.services.task_service import get_all_tasks, toggle_task_completed
+from src.services.task_service import update_task as service_update_task
 
 
 async def add_task(
@@ -145,7 +142,9 @@ async def list_tasks(
             if len(all_tasks) == 0:
                 message = "You have no tasks yet. Create your first task to get started!"
             else:
-                message = f"You have {pending_count} pending tasks and {completed_count} completed tasks"
+                message = (
+                    f"You have {pending_count} pending tasks and {completed_count} completed tasks"
+                )
         elif status == "pending":
             if pending_count == 0:
                 message = "You have no pending tasks. Great job staying on top of things!"
@@ -212,8 +211,7 @@ async def complete_task(
             # Search for matching tasks by title
             all_tasks = await get_all_tasks(session=session, user_id=user_id)
             matching_tasks = [
-                t for t in all_tasks
-                if search_term.lower() in t.title.lower() and not t.completed
+                t for t in all_tasks if search_term.lower() in t.title.lower() and not t.completed
             ]
 
             if len(matching_tasks) == 0:
@@ -226,7 +224,10 @@ async def complete_task(
 
             if len(matching_tasks) > 1:
                 task_list = "\n".join(
-                    [f"{i+1}. {task.title} (ID: {task.id})" for i, task in enumerate(matching_tasks)]
+                    [
+                        f"{i+1}. {task.title} (ID: {task.id})"
+                        for i, task in enumerate(matching_tasks)
+                    ]
                 )
                 return {
                     "success": False,
@@ -335,10 +336,7 @@ async def delete_task(
         if task_id is None and search_term:
             # Search for matching tasks by title
             all_tasks = await get_all_tasks(session=session, user_id=user_id)
-            matching_tasks = [
-                t for t in all_tasks
-                if search_term.lower() in t.title.lower()
-            ]
+            matching_tasks = [t for t in all_tasks if search_term.lower() in t.title.lower()]
 
             if len(matching_tasks) == 0:
                 return {
@@ -350,7 +348,10 @@ async def delete_task(
 
             if len(matching_tasks) > 1:
                 task_list = "\n".join(
-                    [f"{i+1}. {task.title} (ID: {task.id})" for i, task in enumerate(matching_tasks)]
+                    [
+                        f"{i+1}. {task.title} (ID: {task.id})"
+                        for i, task in enumerate(matching_tasks)
+                    ]
                 )
                 return {
                     "success": False,
@@ -471,10 +472,7 @@ async def update_task(
         if task_id is None and search_term:
             # Search for matching tasks by title
             all_tasks = await get_all_tasks(session=session, user_id=user_id)
-            matching_tasks = [
-                t for t in all_tasks
-                if search_term.lower() in t.title.lower()
-            ]
+            matching_tasks = [t for t in all_tasks if search_term.lower() in t.title.lower()]
 
             if len(matching_tasks) == 0:
                 return {
@@ -486,7 +484,10 @@ async def update_task(
 
             if len(matching_tasks) > 1:
                 task_list = "\n".join(
-                    [f"{i+1}. {task.title} (ID: {task.id})" for i, task in enumerate(matching_tasks)]
+                    [
+                        f"{i+1}. {task.title} (ID: {task.id})"
+                        for i, task in enumerate(matching_tasks)
+                    ]
                 )
                 return {
                     "success": False,

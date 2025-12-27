@@ -17,13 +17,8 @@ from typing import Any, Callable
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .tools import (
-    add_task,
-    complete_task,
-    delete_task,
-    list_tasks,
-    update_task,
-)
+from .tools import (add_task, complete_task, delete_task, list_tasks,
+                    update_task)
 
 
 def get_tool_schemas() -> list[dict[str, Any]]:

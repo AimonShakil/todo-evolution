@@ -11,13 +11,8 @@ Constitutional Alignment:
 - Principle XXVI: Agent Tools (MCP integration for agentic interactions)
 """
 
-from .tools import (
-    add_task,
-    complete_task,
-    delete_task,
-    list_tasks,
-    update_task,
-)
+from .tools import (add_task, complete_task, delete_task, list_tasks,
+                    update_task)
 
 __all__ = [
     "add_task",

@@ -14,19 +14,18 @@ Constitutional Alignment:
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.lib.database import get_session
 from src.services.agent_service import AgentService
 from src.services.auth_service import get_user_id_from_token
-from src.services.conversation_service import (
-    create_conversation,
-    get_active_conversation,
-    list_user_conversations,
-)
-from src.services.message_service import create_message, get_conversation_messages, count_messages
+from src.services.conversation_service import (create_conversation,
+                                               get_active_conversation,
+                                               list_user_conversations)
+from src.services.message_service import (count_messages, create_message,
+                                          get_conversation_messages)
 
 router = APIRouter(prefix="", tags=["Chat"])
 security = HTTPBearer()
@@ -100,9 +99,7 @@ async def get_current_user(
 
 
 # Dependency: Verify JWT user matches URL user_id (T026)
-async def verify_user_access(
-    user_id: int, current_user: int = Depends(get_current_user)
-) -> int:
+async def verify_user_access(user_id: int, current_user: int = Depends(get_current_user)) -> int:
     """
     Verify that JWT user matches URL {user_id} parameter.
 
@@ -231,9 +228,7 @@ async def send_chat_message(
     """
     try:
         # T028: Conversation lifecycle - find or create active conversation
-        conversation = await get_active_conversation(
-            session=session, user_id=user_id
-        )
+        conversation = await get_active_conversation(session=session, user_id=user_id)
 
         if not conversation:
             # Create new conversation if none exists
@@ -322,9 +317,7 @@ async def send_chat_message(
     except Exception as e:
         # T031: Handle unexpected errors gracefully
         # Log error for debugging but return user-friendly message
-        error_message = (
-            "An unexpected error occurred. Please try again in a moment."
-        )
+        error_message = "An unexpected error occurred. Please try again in a moment."
 
         # Try to save error message to conversation for audit
         try:

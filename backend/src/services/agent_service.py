@@ -149,9 +149,7 @@ class AgentService:
             True
         """
         # Build messages array: context + new user message
-        messages = conversation_context + [
-            {"role": "user", "content": user_message}
-        ]
+        messages = conversation_context + [{"role": "user", "content": user_message}]
 
         # Get tool schemas from MCP server (T021)
         tools = get_tool_schemas()
@@ -224,23 +222,27 @@ class AgentService:
 
             # Step 2: Send tool results back to agent for natural language formatting (T041)
             # This allows agent to convert JSON task lists into conversational responses
-            messages_with_tools = messages + [
-                {
-                    "role": "assistant",
-                    "content": response_text,
-                    "tool_calls": [
-                        {
-                            "id": tc.id,
-                            "type": "function",
-                            "function": {
-                                "name": tc.function.name,
-                                "arguments": tc.function.arguments,
-                            },
-                        }
-                        for tc in agent_message.tool_calls
-                    ],
-                }
-            ] + tool_messages
+            messages_with_tools = (
+                messages
+                + [
+                    {
+                        "role": "assistant",
+                        "content": response_text,
+                        "tool_calls": [
+                            {
+                                "id": tc.id,
+                                "type": "function",
+                                "function": {
+                                    "name": tc.function.name,
+                                    "arguments": tc.function.arguments,
+                                },
+                            }
+                            for tc in agent_message.tool_calls
+                        ],
+                    }
+                ]
+                + tool_messages
+            )
 
             try:
                 # Get agent's formatted response (T041 - task query formatting)

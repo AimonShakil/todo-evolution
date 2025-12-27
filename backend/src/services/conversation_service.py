@@ -50,9 +50,7 @@ async def create_conversation(session: AsyncSession, user_id: int) -> Conversati
     return conversation
 
 
-async def get_active_conversation(
-    session: AsyncSession, user_id: int
-) -> Optional[Conversation]:
+async def get_active_conversation(session: AsyncSession, user_id: int) -> Optional[Conversation]:
     """
     Get the active conversation for a user.
 

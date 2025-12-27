@@ -14,9 +14,9 @@ import os
 from datetime import datetime, timedelta
 from typing import Optional
 
+from dotenv import load_dotenv
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -27,8 +27,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 JWT_SECRET = os.getenv("JWT_SECRET")
 if not JWT_SECRET:
     raise ValueError(
-        "JWT_SECRET environment variable is not set. "
-        "Please add JWT_SECRET to your .env file."
+        "JWT_SECRET environment variable is not set. " "Please add JWT_SECRET to your .env file."
     )
 
 JWT_ALGORITHM = "HS256"

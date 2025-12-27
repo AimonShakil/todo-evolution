@@ -16,11 +16,8 @@ from sqlmodel import select
 
 from src.lib.database import get_session
 from src.models.user import User
-from src.services.auth_service import (
-    hash_password,
-    verify_password,
-    create_access_token,
-)
+from src.services.auth_service import (create_access_token, hash_password,
+                                       verify_password)
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 

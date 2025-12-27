@@ -13,14 +13,15 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
-from src.lib.database import init_db, close_db
-from src.routes import auth, tasks, chat
+from src.lib.database import close_db, init_db
+from src.routes import auth, chat, tasks
+from src.routes.chat import router as chat_router
 from src.routes.tasks import router as task_router
 from src.routes.tasks import router as tasks_router
-from src.routes.chat import router as chat_router
+
 # Create FastAPI app
 app = FastAPI(
     title="Todo Evolution - Phase III API",
@@ -35,7 +36,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",  # Next.js dev server
-	"http://localhost:3002",
+        "http://localhost:3002",
         "http://127.0.0.1:3000",
     ],
     allow_credentials=True,
