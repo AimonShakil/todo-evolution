@@ -64,6 +64,14 @@ export interface ChatMessageResponse {
   intent_unclear: boolean;
 }
 
+export interface Conversation {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+  message_count: number;
+}
+
 /**
  * Base API request with JWT authentication
  */
@@ -72,9 +80,9 @@ async function apiRequest<T>(
   options: RequestInit = {},
   token?: string
 ): Promise<T> {
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...options.headers,
+    ...(options.headers as Record<string, string>),
   };
 
   if (token) {
@@ -181,4 +189,7 @@ export const chatApi = {
       method: "POST",
       body: JSON.stringify(data),
     }, token),
+
+  getConversations: (userId: number, token: string): Promise<Conversation[]> =>
+    apiRequest(`/api/${userId}/conversations`, {}, token),
 };

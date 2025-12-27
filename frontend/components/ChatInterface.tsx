@@ -27,18 +27,22 @@ interface ChatInterfaceProps {
   userId: number;
   token: string;
   userName?: string;
+  activeConversationId?: number | null;
+  onConversationChange?: (conversationId: number) => void;
 }
 
 export default function ChatInterface({
   userId,
   token,
   userName = "User",
+  activeConversationId = null,
+  onConversationChange,
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [conversationId, setConversationId] = useState<number | null>(null);
+  const [conversationId, setConversationId] = useState<number | null>(activeConversationId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -46,7 +50,7 @@ export default function ChatInterface({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Add welcome message on mount
+  // Add welcome message on mount or when conversation changes
   useEffect(() => {
     setMessages([
       {
@@ -55,7 +59,12 @@ export default function ChatInterface({
         created_at: new Date().toISOString(),
       },
     ]);
-  }, []);
+  }, [activeConversationId]);
+
+  // Update local conversation ID when prop changes (conversation switch)
+  useEffect(() => {
+    setConversationId(activeConversationId);
+  }, [activeConversationId]);
 
   const handleSendMessage = async () => {
     if (loading) return;
@@ -90,6 +99,7 @@ export default function ChatInterface({
       // Update conversation ID if first message
       if (!conversationId && response.conversation_id) {
         setConversationId(response.conversation_id);
+        onConversationChange?.(response.conversation_id);
       }
 
       // Format assistant response
