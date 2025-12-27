@@ -19,6 +19,7 @@ from sqlmodel import select
 
 from src.models.conversation import Conversation
 from src.models.message import Message
+from src.services.conversation_service import archive_conversation
 
 
 async def create_message(
@@ -73,6 +74,13 @@ async def create_message(
 
     await session.commit()
     await session.refresh(message)
+
+    # T064: Auto-archive check - if conversation reaches 500 messages, archive it
+    # This prevents unbounded growth and encourages users to start fresh conversations
+    current_count = await count_messages(session, conversation_id, user_id)
+    if current_count >= 500:
+        await archive_conversation(session, user_id, conversation_id)
+
     return message
 
 
