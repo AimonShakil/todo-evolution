@@ -23,6 +23,8 @@ import openai
 from openai import AsyncOpenAI
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.lib.logging import setup_logging, log_agent_request, log_agent_response, log_tool_call, log_error
+from src.lib.metrics import metrics_collector
 from src.mcp.server import execute_tool, get_tool_schemas
 from src.services.message_service import get_conversation_messages
 
@@ -56,6 +58,9 @@ class AgentService:
         self.client = AsyncOpenAI(api_key=api_key)
         self.primary_model = "gpt-4"  # Primary model per ADR-007
         self.fallback_model = "gpt-3.5-turbo"  # Fallback per ADR-007
+
+        # Initialize structured logging (T071)
+        self.logger = setup_logging("agent-service")
 
     async def get_conversation_context(
         self,
@@ -113,6 +118,7 @@ class AgentService:
         user_id: int,
         user_message: str,
         conversation_context: list[dict[str, str]],
+        conversation_id: int = 0,  # Added for observability (T071, T073)
     ) -> dict[str, Any]:
         """
         Invoke OpenAI agent with tools and context (T021-T024).
@@ -128,6 +134,7 @@ class AgentService:
             user_id: User ID for tool execution (data isolation)
             user_message: Current user input
             conversation_context: Previous messages from get_conversation_context()
+            conversation_id: Conversation ID for observability (T071, T073)
 
         Returns:
             Dict with:
@@ -148,6 +155,18 @@ class AgentService:
             >>> "milk" in result["response"].lower()
             True
         """
+        import time  # For latency tracking (T071, T073)
+        start_time = time.time()
+
+        # Log agent request (T071)
+        log_agent_request(
+            self.logger,
+            user_id=user_id,
+            conversation_id=conversation_id,
+            message=user_message,
+            model=self.primary_model
+        )
+
         # Build messages array: context + new user message
         messages = conversation_context + [{"role": "user", "content": user_message}]
 
@@ -165,6 +184,13 @@ class AgentService:
 
         except openai.RateLimitError as e:
             # Fallback to GPT-3.5-turbo on rate limit (T022, ADR-007)
+            log_error(
+                self.logger,
+                error_type="RateLimitError",
+                error_message=f"Rate limit hit on {self.primary_model}, falling back to {self.fallback_model}",
+                user_id=user_id,
+                conversation_id=conversation_id
+            )
             model_used = self.fallback_model
             response = await self._call_openai_agent(
                 messages=messages,
@@ -174,6 +200,14 @@ class AgentService:
 
         except openai.APIError as e:
             # Handle API errors gracefully (T022, ADR-007)
+            log_error(
+                self.logger,
+                error_type="APIError",
+                error_message=str(e),
+                user_id=user_id,
+                conversation_id=conversation_id
+            )
+            metrics_collector.increment_counter("total_errors")
             return {
                 "success": False,
                 "response": "AI assistant temporarily unavailable. Please try again in a moment.",
@@ -196,20 +230,45 @@ class AgentService:
                 tool_args = json.loads(tool_call.function.arguments)  # Parse JSON args (secure)
 
                 # Execute tool via MCP server
-                tool_result = await execute_tool(
-                    tool_name=tool_name,
-                    session=session,
-                    user_id=user_id,
-                    **tool_args,
-                )
+                try:
+                    tool_result = await execute_tool(
+                        tool_name=tool_name,
+                        session=session,
+                        user_id=user_id,
+                        **tool_args,
+                    )
 
-                tool_calls_executed.append(
-                    {
-                        "tool": tool_name,
-                        "arguments": tool_args,
-                        "result": tool_result,
-                    }
-                )
+                    # Log successful tool call (T071)
+                    log_tool_call(
+                        self.logger,
+                        user_id=user_id,
+                        conversation_id=conversation_id,
+                        tool_name=tool_name,
+                        tool_args=tool_args,
+                        success=True
+                    )
+
+                    tool_calls_executed.append(
+                        {
+                            "tool": tool_name,
+                            "arguments": tool_args,
+                            "result": tool_result,
+                        }
+                    )
+
+                except Exception as tool_error:
+                    # Log failed tool call (T071)
+                    log_tool_call(
+                        self.logger,
+                        user_id=user_id,
+                        conversation_id=conversation_id,
+                        tool_name=tool_name,
+                        tool_args=tool_args,
+                        success=False,
+                        error=str(tool_error)
+                    )
+                    # Re-raise to maintain existing behavior
+                    raise
 
                 # Format tool result for agent (T041 - conversational formatting)
                 tool_messages.append(
@@ -262,6 +321,50 @@ class AgentService:
         # Detect inability to determine intent (T024, Edge Case 2)
         intent_unclear = self._detect_unclear_intent(response_text)
 
+        # Calculate latency (T071, T073)
+        latency_ms = (time.time() - start_time) * 1000
+
+        # Extract token usage for cost tracking (T073)
+        usage = response.usage if hasattr(response, 'usage') else None
+        tokens_used = None
+        if usage:
+            tokens_used = usage.total_tokens
+            # Record cost metrics (T073)
+            metrics_collector.record_cost(
+                user_id=user_id,
+                conversation_id=conversation_id,
+                model=model_used,
+                prompt_tokens=usage.prompt_tokens,
+                completion_tokens=usage.completion_tokens
+            )
+
+        # Determine intent for metrics
+        intent_detected = "chat"  # Default
+        if tool_calls_executed:
+            intent_detected = tool_calls_executed[0]["tool"]  # First tool called
+
+        # Record intent accuracy (T071, T073)
+        success = True
+        metrics_collector.record_intent(
+            user_id=user_id,
+            conversation_id=conversation_id,
+            intent_detected=intent_detected,
+            tool_executed=tool_calls_executed[0]["tool"] if tool_calls_executed else None,
+            success=success
+        )
+
+        # Log agent response (T071, T073)
+        log_agent_response(
+            self.logger,
+            user_id=user_id,
+            conversation_id=conversation_id,
+            response=response_text,
+            model_used=model_used,
+            tool_calls=[{"tool": tc["tool"], "args": tc["arguments"]} for tc in tool_calls_executed],
+            latency_ms=latency_ms,
+            tokens_used=tokens_used
+        )
+
         return {
             "success": True,
             "response": response_text,
@@ -269,6 +372,8 @@ class AgentService:
             "model_used": model_used,
             "is_ambiguous": is_ambiguous,
             "intent_unclear": intent_unclear,
+            "latency_ms": latency_ms,  # Added for observability
+            "tokens_used": tokens_used,  # Added for observability
         }
 
     async def _call_openai_agent(

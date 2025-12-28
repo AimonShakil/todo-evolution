@@ -19,6 +19,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.lib.database import get_session
+from src.lib.logging import setup_logging, log_error
+from src.lib.metrics import metrics_collector, LatencyTimer
 from src.services.agent_service import AgentService
 from src.services.auth_service import get_user_id_from_token
 from src.services.conversation_service import (create_conversation,
@@ -26,6 +28,9 @@ from src.services.conversation_service import (create_conversation,
                                                list_user_conversations)
 from src.services.message_service import (count_messages, create_message,
                                           get_conversation_messages)
+
+# Initialize logging for chat endpoint (T072)
+logger = setup_logging("chat-endpoint")
 
 router = APIRouter(prefix="", tags=["Chat"])
 security = HTTPBearer()
@@ -226,6 +231,9 @@ async def send_chat_message(
         HTTPException 400: Invalid request (message too long)
         HTTPException 500: Agent service error
     """
+    # Increment total requests counter (T072)
+    metrics_collector.increment_counter("total_requests")
+
     try:
         # T028: Conversation lifecycle - find or create active conversation
         conversation = await get_active_conversation(session=session, user_id=user_id)
@@ -254,13 +262,15 @@ async def send_chat_message(
             limit=50,
         )
 
-        # Invoke agent with context and tools
-        agent_result = await agent_service.invoke_agent(
-            session=session,
-            user_id=user_id,
-            user_message=request.message,
-            conversation_context=conversation_context,
-        )
+        # Invoke agent with context and tools (with latency tracking T072)
+        with LatencyTimer("chat_endpoint", user_id, conversation.id):
+            agent_result = await agent_service.invoke_agent(
+                session=session,
+                user_id=user_id,
+                user_message=request.message,
+                conversation_context=conversation_context,
+                conversation_id=conversation.id,  # Added for observability (T072)
+            )
 
         # T031: Error handling - check if agent invocation succeeded
         if not agent_result["success"]:
@@ -309,13 +319,29 @@ async def send_chat_message(
 
     except ValueError as e:
         # T031: Handle validation errors (from Pydantic or service layer)
+        log_error(
+            logger,
+            error_type="ValueError",
+            error_message=str(e),
+            user_id=user_id
+        )
+        metrics_collector.increment_counter("total_errors")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
 
     except Exception as e:
-        # T031: Handle unexpected errors gracefully
+        # T031: Handle unexpected errors gracefully (T072)
+        log_error(
+            logger,
+            error_type=type(e).__name__,
+            error_message=str(e),
+            user_id=user_id,
+            context={"endpoint": "chat"}
+        )
+        metrics_collector.increment_counter("total_errors")
+
         # Log error for debugging but return user-friendly message
         error_message = "An unexpected error occurred. Please try again in a moment."
 
