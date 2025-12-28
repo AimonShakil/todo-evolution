@@ -44,12 +44,12 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-6 py-20 text-center">
-        <div className="max-w-3xl mx-auto space-y-6">
-          <h2 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+      <section className="container mx-auto px-6 py-24 text-center">
+        <div className="max-w-4xl mx-auto space-y-8">
+          <h2 className="text-6xl md:text-7xl lg:text-8xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight">
             Manage Tasks with AI
           </h2>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
             Stop clicking through menus. Just tell our AI what you need to do,
             and it handles the rest. Natural language task management powered by GPT-4.
           </p>
