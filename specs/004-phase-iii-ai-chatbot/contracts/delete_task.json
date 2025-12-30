@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "delete_task",
+  "description": "Permanently delete a task for the authenticated user. This tool should be used when the user wants to remove, delete, or discard a task. Natural language examples: 'Delete my dentist task', 'Remove the grocery item', 'Get rid of that task'. NOTE: If task_id is not provided, the agent should first use list_tasks to find the matching task.",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "integer",
+      "description": "The authenticated user's ID (extracted from JWT token). Required for user data isolation."
+    },
+    "task_id": {
+      "type": "integer",
+      "description": "The unique ID of the task to delete. If not provided by user, agent should use list_tasks to find matching task by title/description."
+    }
+  },
+  "required": ["user_id", "task_id"],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "user_id": 1,
+      "task_id": 42
+    }
+  ],
+  "returns": {
+    "type": "object",
+    "properties": {
+      "success": {
+        "type": "boolean",
+        "description": "Whether the task was deleted successfully"
+      },
+      "deleted_task_id": {
+        "type": "integer",
+        "description": "The ID of the deleted task"
+      },
+      "message": {
+        "type": "string",
+        "description": "User-friendly confirmation message (e.g., 'Deleted task: Buy groceries')"
+      }
+    },
+    "required": ["success", "deleted_task_id", "message"]
+  },
+  "errors": [
+    {
+      "code": "NOT_FOUND",
+      "description": "Task with given ID does not exist or does not belong to user"
+    },
+    {
+      "code": "UNAUTHORIZED",
+      "description": "User ID mismatch or invalid JWT token"
+    },
+    {
+      "code": "DATABASE_ERROR",
+      "description": "Failed to delete task from database"
+    }
+  ],
+  "implementation": {
+    "service": "TaskService",
+    "method": "delete_task",
+    "reuse": "100% - Phase II function unchanged"
+  },
+  "agent_notes": [
+    "If user references a task by title/description (e.g., 'delete the grocery task'), chain list_tasks first to find the task_id",
+    "If multiple tasks match, ask user to clarify which one",
+    "If no tasks match, inform user that task doesn't exist",
+    "Deletion is permanent - confirm with user if ambiguous ('Are you sure you want to delete...')"
+  ]
+}

@@ -8,9 +8,13 @@ Constitutional Alignment:
 """
 
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+    from .conversation import Conversation
+    from .message import Message
 
 
 class User(SQLModel, table=True):
@@ -32,3 +36,7 @@ class User(SQLModel, table=True):
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    # Relationships (Phase III)
+    conversations: list["Conversation"] = Relationship(back_populates="user")
+    messages: list["Message"] = Relationship(back_populates="user")

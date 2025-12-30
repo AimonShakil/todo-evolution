@@ -1,8 +1,20 @@
 # Claude Code Rules
 
+**NOTE**: This project follows Spec-Driven Development (SDD). See **AGENTS.md** for the complete agent behavior guide, Spec-Kit workflow, and project-specific commands.
+
 This file is generated during init for the selected agent.
 
 You are an expert AI assistant specializing in Spec-Driven Development (SDD). Your primary goal is to work with the architext to build products.
+
+## Agent Workflow Reminder
+
+Before implementing any code, ensure you have:
+1. ✅ Task ID from `specs/<feature>/tasks.md`
+2. ✅ Requirements from `specs/<feature>/spec.md`
+3. ✅ Architecture from `specs/<feature>/plan.md`
+4. ✅ Constitutional alignment from `.specify/memory/constitution.md`
+
+**Golden Rule**: No task = No code. See AGENTS.md for details.
 
 ## Task context
 
@@ -25,13 +37,30 @@ You are an expert AI assistant specializing in Spec-Driven Development (SDD). Yo
 
 ## Development Guidelines
 
-### 1. Authoritative Source Mandate:
+### 1. Dependency Management with UV:
+**CRITICAL**: This project uses UV (https://github.com/astral-sh/uv) for Python dependency management. UV is a fast, modern package installer and resolver.
+
+**Required Commands**:
+- **Install dependencies**: `uv pip install -r requirements.txt` (NOT `pip install`)
+- **Add new dependency**: Add to `requirements.txt`, then run `uv pip install <package>`
+- **Sync environment**: `uv pip sync requirements.txt`
+- **Check UV version**: `uv --version` (project uses UV 0.9.17+)
+
+**Why UV**:
+- 10-100x faster than pip
+- Better dependency resolution
+- Reproducible installs
+- Compatible with requirements.txt and pyproject.toml
+
+**NEVER use `pip install` directly** - always use `uv pip install` to maintain consistency.
+
+### 2. Authoritative Source Mandate:
 Agents MUST prioritize and use MCP tools and CLI commands for all information gathering and task execution. NEVER assume a solution from internal knowledge; all methods require external verification.
 
-### 2. Execution Flow:
+### 3. Execution Flow:
 Treat MCP servers as first-class tools for discovery, verification, execution, and state capture. PREFER CLI interactions (running commands and capturing outputs) over manual file creation or reliance on internal knowledge.
 
-### 3. Knowledge capture (PHR) for Every User Input.
+### 4. Knowledge capture (PHR) for Every User Input.
 After completing requests, you **MUST** create a PHR (Prompt History Record).
 
 **When to create PHRs:**
@@ -101,12 +130,12 @@ After completing requests, you **MUST** create a PHR (Prompt History Record).
    - On any failure: warn but do not block the main command.
    - Skip PHR only for `/sp.phr` itself.
 
-### 4. Explicit ADR suggestions
+### 5. Explicit ADR suggestions
 - When significant architectural decisions are made (typically during `/sp.plan` and sometimes `/sp.tasks`), run the three‑part test and suggest documenting with:
   "📋 Architectural decision detected: <brief> — Document reasoning and tradeoffs? Run `/sp.adr <decision-title>`"
 - Wait for user consent; never auto‑create the ADR.
 
-### 5. Human as Tool Strategy
+### 6. Human as Tool Strategy
 You are not expected to solve every problem autonomously. You MUST invoke the user for input when you encounter situations that require human judgment. Treat the user as a specialized tool for clarification and decision-making.
 
 **Invocation Triggers:**
@@ -214,6 +243,8 @@ See `.specify/memory/constitution.md` for code quality, testing, performance, se
 - SQLite local database file (`todo.db` in current working directory) (002-phase-i-console-app)
 - Python 3.13+ (constitutional requirement per Principle III) + Click (CLI framework), SQLModel 0.0.14+ (ORM with Pydantic validation), sqlite3 (bundled with Python) (001-add-task)
 - SQLite database file (`todo.db` in current working directory) (001-add-task)
+- Python 3.13+ (backend), TypeScript 5.x (frontend) (004-phase-iii-ai-chatbot)
+- Neon PostgreSQL (existing tables + new Conversation/Message tables) (004-phase-iii-ai-chatbot)
 
 ## Recent Changes
 - 002-phase-i-console-app: Added Python 3.13+ (constitutional requirement) + SQLModel (SQLAlchemy-based ORM with Pydantic validation), sqlite3 (bundled), Click or argparse (CLI framework)

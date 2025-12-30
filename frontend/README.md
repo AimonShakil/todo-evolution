@@ -1,20 +1,21 @@
-# Todo Evolution - Phase II Frontend
+# Todo Evolution - Phase III Frontend
 
-**Next.js 16 + React 19 + Shadcn/ui + Better Auth**
+**Next.js 16 + React 19 + AI-Powered Chat Interface**
 
-Modern web interface for task management with JWT authentication.
+Modern web interface for task management with natural language AI assistant.
 
 ---
 
 ## Features
 
-- ✅ **Next.js 16** with App Router
+- ✅ **Next.js 16** with App Router (Turbopack)
 - ✅ **React 19** with Server Components
 - ✅ **Tailwind CSS 4** for styling
 - ✅ **Shadcn/ui** component library (Neutral theme)
-- ✅ **Better Auth** for authentication
 - ✅ **TypeScript** for type safety
 - ✅ **JWT Authentication** with FastAPI backend
+- ✅ **AI Chat Interface** (Phase III) - Natural language task management
+- ✅ **Conversation History** (Phase III) - Multi-turn dialogue support
 
 ---
 
@@ -39,7 +40,22 @@ Modern web interface for task management with JWT authentication.
 - Create new tasks (title + optional description)
 - Toggle task completion
 - Delete tasks
+- Navigation to Chat interface
 - Sign out button
+
+### `/chat` - AI Assistant (Phase III)
+- **Natural language task management** via conversational interface
+- **Conversation history sidebar** showing all past conversations
+- **Context-aware responses** across multi-turn dialogues
+- **Auto-archive** at 500 messages per conversation
+- Switch between conversations or start new ones
+- Powered by OpenAI GPT-4 with function calling
+
+**Example interactions**:
+- "Add task: Buy milk"
+- "What tasks do I have?"
+- "Complete the milk task"
+- "Change it to almond milk" (context-aware)
 
 ---
 
@@ -104,6 +120,13 @@ All task endpoints require JWT token:
 - `taskApi.toggle(userId, taskId, token)` → Toggle completion
 - `taskApi.delete(userId, taskId, token)` → Delete task
 
+### Chat API (`chatApi`) - Phase III
+All chat endpoints require JWT token:
+- `chatApi.sendMessage(userId, { message }, token)` → Send message to AI assistant
+  - Returns: `{ success, response, conversation_id, tool_calls, model_used }`
+- `chatApi.getConversations(userId, token)` → Get conversation history
+  - Returns: Array of `{ id, created_at, updated_at, is_active, message_count }`
+
 ---
 
 ## Constitutional Compliance
@@ -132,27 +155,35 @@ All task endpoints require JWT token:
 
 ```
 frontend/
-├── app/                    # Next.js App Router pages
-│   ├── page.tsx           # Home (landing page)
-│   ├── signin/page.tsx    # Sign in page
-│   ├── signup/page.tsx    # Sign up page
-│   ├── tasks/page.tsx     # Task management page
-│   └── globals.css        # Global styles (Shadcn/ui theme)
+├── app/                         # Next.js App Router pages
+│   ├── page.tsx                # Home (landing page)
+│   ├── signin/page.tsx         # Sign in page
+│   ├── signup/page.tsx         # Sign up page
+│   ├── tasks/page.tsx          # Task management page
+│   ├── chat/page.tsx           # AI chat page (Phase III)
+│   ├── layout.tsx              # Root layout with metadata
+│   └── globals.css             # Global styles (Shadcn/ui theme)
 ├── components/
-│   └── ui/                # Shadcn/ui components
-│       ├── button.tsx
-│       ├── card.tsx
-│       ├── input.tsx
-│       ├── label.tsx
-│       ├── checkbox.tsx
-│       └── ...
+│   ├── ui/                     # Shadcn/ui components
+│   │   ├── button.tsx
+│   │   ├── card.tsx
+│   │   ├── input.tsx
+│   │   ├── label.tsx
+│   │   ├── checkbox.tsx
+│   │   └── ...
+│   ├── ChatInterface.tsx       # Phase III - Main chat UI
+│   ├── ConversationList.tsx    # Phase III - Conversation sidebar
+│   └── Navigation.tsx          # Global navigation (Tasks ↔ Chat)
+├── hooks/
+│   └── useConversationSwitcher.ts  # Phase III - Conversation state management
 ├── lib/
-│   ├── auth.ts            # Better Auth server config
-│   ├── auth-client.ts     # Better Auth client (React hooks)
-│   ├── api-client.ts      # API client for backend
-│   └── utils.ts           # Utility functions
-├── .env.local             # Environment variables (not committed)
-├── components.json        # Shadcn/ui config
+│   ├── auth.ts                 # Better Auth server config
+│   ├── auth-client.ts          # Better Auth client (React hooks)
+│   ├── api-client.ts           # API client for backend (includes chatApi)
+│   ├── chatkit-config.ts       # Phase III - Chat configuration & validation
+│   └── utils.ts                # Utility functions
+├── .env.local                  # Environment variables (not committed)
+├── components.json             # Shadcn/ui config
 ├── package.json
 ├── tailwind.config.ts
 └── tsconfig.json
@@ -166,12 +197,11 @@ frontend/
 - Backend requires Python 3.12 (not 3.14) due to Pydantic + SQLModel compatibility
 - See `backend/MIGRATION_AND_TESTING_NOTES.md` for details
 
-### Future Improvements (Phase V)
-- Move JWT tokens to httpOnly cookies (more secure)
-- Add email verification
-- Add password reset
-- Add task priority, tags, due dates
-- Add task filtering and sorting
+### Future Improvements
+- **Phase IV**: Observability & Production (logging, metrics, cleanup scripts)
+- **Phase V**: Advanced task features (priority, tags, due dates, filtering)
+- **Phase VI**: Security enhancements (httpOnly cookies, email verification, password reset)
+- **Phase VII**: Collaboration features (task sharing, teams, real-time updates)
 
 ---
 
@@ -214,12 +244,21 @@ npx shadcn@latest add dropdown-menu
 
 ---
 
-## Next Steps
+## Development Status
 
-- **STEP 4**: Frontend Testing (React Testing Library, E2E)
-- **STEP 5**: Integration & Deployment
-- **Phase V**: Advanced features (priorities, tags, recurrence, sharing)
+- ✅ **Phase I Complete**: Console-based task management
+- ✅ **Phase II Complete**: Web API with JWT authentication
+- ✅ **Phase III Complete**: AI chatbot with natural language interface
+  - ✅ User Story 1: Task creation via chat
+  - ✅ User Story 2: Task queries with conversational responses
+  - ✅ User Story 3: Task management without IDs (search-based)
+  - ✅ User Story 4: Context awareness & conversation history
+  - ✅ Auto-archive at 500 messages
 
 ---
 
-**Status**: ✅ **STEP 3 COMPLETE** - Frontend foundation ready for integration testing
+**Next Steps**: Phase IV (Observability), Phase V (Advanced Features)
+
+---
+
+**Status**: ✅ **Phase III Complete** - AI-powered task management ready for production

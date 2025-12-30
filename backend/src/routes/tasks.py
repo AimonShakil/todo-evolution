@@ -12,14 +12,14 @@ Constitutional Alignment:
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.lib.database import get_session
 from src.models.task import Task
-from src.services.auth_service import get_user_id_from_token
 from src.services import task_service
+from src.services.auth_service import get_user_id_from_token
 
 router = APIRouter(prefix="", tags=["Tasks"])
 security = HTTPBearer()
@@ -97,10 +97,7 @@ async def get_current_user(
 
 
 # Dependency: Verify JWT user matches URL user_id
-async def verify_user_access(
-    user_id: int,
-    current_user: int = Depends(get_current_user)
-) -> int:
+async def verify_user_access(user_id: int, current_user: int = Depends(get_current_user)) -> int:
     """
     Verify that JWT user matches URL {user_id} parameter.
 
