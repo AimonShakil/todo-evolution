@@ -1,0 +1,80 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cleanup-old-conversations
+  namespace: todo-evolution  # Update to your namespace
+  labels:
+    app: todo-evolution
+    component: cleanup
+spec:
+  # Run daily at 2 AM UTC (off-peak hours)
+  schedule: "0 2 * * *"
+
+  # Keep last 3 successful jobs for audit
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+
+  # Don't run if previous job still running
+  concurrencyPolicy: Forbid
+
+  jobTemplate:
+    spec:
+      # Retry failed jobs up to 2 times
+      backoffLimit: 2
+
+      # Delete completed jobs after 24 hours
+      ttlSecondsAfterFinished: 86400
+
+      template:
+        metadata:
+          labels:
+            app: todo-evolution
+            component: cleanup-job
+        spec:
+          restartPolicy: OnFailure
+
+          containers:
+          - name: cleanup
+            image: todo-evolution-backend:latest  # Update to your image
+            imagePullPolicy: IfNotPresent
+
+            command:
+              - python
+              - scripts/cleanup_old_conversations.py
+              - --verbose
+
+            env:
+              - name: DATABASE_URL
+                valueFrom:
+                  secretKeyRef:
+                    name: todo-evolution-secrets
+                    key: database-url
+
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "100m"
+              limits:
+                memory: "256Mi"
+                cpu: "500m"
+
+            # Security context
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 1000
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
+---
+# Secret template (create separately with actual values)
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: todo-evolution-secrets
+#   namespace: todo-evolution
+# type: Opaque
+# data:
+#   database-url: <base64-encoded-DATABASE_URL>
